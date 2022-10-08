@@ -60,3 +60,29 @@ services:
       MINIO_BUCKET_NAME: job-results
       PORT: 3006
     command: ["yarn", "start"]
+  
+  credential-input:
+    build:
+      context: ./credential-input
+    ports:
+      - 3002:3000
+    environment:
+      REACT_APP_GITHUB_AUTH_URL: https://github.com/login/oauth/authorize?client_id=f9d6e5ff6997e5ead4f5
+      REACT_APP_BACKEND_BASE_URL: http://localhost:3007    
+    volumes:
+      - ./credential-input:/usr/src/app
+    command: ["yarn", "start"]
+
+  credential-oracle:
+    build:
+      context: ./credential-oracle
+    ports:
+      - 3007:8080
+    environment:
+      PORT: 8080
+      GITHUB_CLIENT_SECRET: caef35b5e3ce3331605377835bd0fb27973e8454
+      GITHUB_CLIENT_ID: f9d6e5ff6997e5ead4f5
+      GITHUB_ACCESS_TOKEN_URL: https://github.com/login/oauth/access_token
+    volumes:
+      - ./credential-oracle:/usr/src/app
+    command: ["yarn", "dev"]
