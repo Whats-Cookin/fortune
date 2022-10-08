@@ -43,8 +43,6 @@ app.post("/auth/github", async function (req, res) {
       headers: { Authorization: `token ${access_token}` },
     });
 
-    console.log("response >>>", response);
-
     res.status(200).json({ message: userData });
   } catch (err) {
     res.status(500).json({ message: err.message });
