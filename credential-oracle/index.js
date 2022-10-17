@@ -43,6 +43,12 @@ app.post("/auth/github", async function (req, res) {
       headers: { Authorization: `token ${access_token}` },
     });
 
+    /**
+     * To do:
+     *  1. Web scrape the achivements from Github
+     *  2. Write the data to composedb
+     */
+
     res.status(200).json({ message: userData });
   } catch (err) {
     res.status(500).json({ message: err.message });
