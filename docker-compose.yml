@@ -76,10 +76,9 @@ services:
   credential-oracle:
     build:
       context: ./credential-oracle
-    ports:
-      - 3007:8080
+    network_mode: "host"
     environment:
-      PORT: 8080
+      PORT: 3007 
       GITHUB_CLIENT_SECRET: caef35b5e3ce3331605377835bd0fb27973e8454
       GITHUB_CLIENT_ID: f9d6e5ff6997e5ead4f5
       GITHUB_ACCESS_TOKEN_URL: https://github.com/login/oauth/access_token
