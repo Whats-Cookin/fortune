@@ -35,12 +35,8 @@ if (!process.env.DID_PRIVATE_KEY) {
   process.exit(1);
 }
 
-console.log("DID_PRIVATE_KEY >>", process.env.DID_PRIVATE_KEY);
-
 const compositeFileName = process.env.COMPOSITE_FILE_NAME;
 const privateKey = fromString(process.env.DID_PRIVATE_KEY, "base16");
-
-console.log("privateKey >>>", privateKey);
 
 const did = new DID({
   resolver: getResolver(),

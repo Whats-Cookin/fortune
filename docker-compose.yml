@@ -61,6 +61,13 @@ services:
       PORT: 3006
     command: ["yarn", "start"]
   
+  composedb:
+    image: whatscookin/whatscookin-composedb:2.11
+    environment:
+      ADMIN_DIDS: did:key:z6Mkjs4ehQbTczpBKykv1jtJcxaFmyt2Ssd6wmT4K3xjcmAD
+    ports:
+      - 7007:7007
+  
   credential-input:
     build:
       context: ./credential-input
@@ -76,15 +83,16 @@ services:
   credential-oracle:
     build:
       context: ./credential-oracle
-    network_mode: "host"
+    ports:
+      - 3007:8080
     environment:
-      PORT: 3007 
+      PORT: 8080
       GITHUB_CLIENT_SECRET: caef35b5e3ce3331605377835bd0fb27973e8454
       GITHUB_CLIENT_ID: f9d6e5ff6997e5ead4f5
       GITHUB_ACCESS_TOKEN_URL: https://github.com/login/oauth/access_token
       DID_PRIVATE_KEY: 59e83c249b8947d1524a3f5f66326c78759c86d75573027e7bef571c3fddfb90
       GITHUB_USER_MODEL_STREAM_ID: kjzl6hvfrbw6c5no55wlukc496fea0iujswirvarqnode65vmh5fjb2w926sqph 
-      CERAMIC_NODE_URL: http://localhost:7007
+      CERAMIC_NODE_URL: http://composedb:7007
       COMPOSITE_FILE_NAME: github_user_composite.json
     volumes:
       - ./credential-oracle:/usr/src/app
