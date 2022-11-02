@@ -7,6 +7,7 @@ type GithubUser @createModel(
     accountRelation: SINGLE,
     description: "Github user details"
 ) {
+    user_account: String! @string(minLength: 1, maxLength: 255)
     login: String! @string(minLength: 1, maxLength: 255) 
     github_id: Int!
     url: String! @string(minLength: 1, maxLength: 255)
@@ -25,5 +26,5 @@ type GithubUser @createModel(
     followers: Int
     following: Int
     created_at: DateTime!
-    achievement: [GithubAchievement] @list(maxLength: 20)
+    achievements: [GithubAchievement] @list(maxLength: 20)
 }

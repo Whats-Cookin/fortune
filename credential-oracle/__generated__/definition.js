@@ -2,7 +2,7 @@
 export const definition = {
   models: {
     GithubUser: {
-      id: "kjzl6hvfrbw6c5no55wlukc496fea0iujswirvarqnode65vmh5fjb2w926sqph",
+      id: "kjzl6hvfrbw6c5s68cd8auj0rq4xy9tmx6q9dbegujqmnq3aj6hdlp9hvljofwo",
       accountRelation: { type: "single" },
     },
   },
@@ -27,7 +27,7 @@ export const definition = {
       github_id: { type: "integer", required: true },
       created_at: { type: "datetime", required: true },
       site_admin: { type: "boolean", required: false },
-      achievement: {
+      achievements: {
         type: "list",
         required: false,
         item: {
@@ -39,6 +39,7 @@ export const definition = {
       },
       public_gists: { type: "integer", required: false },
       public_repos: { type: "integer", required: false },
+      user_account: { type: "string", required: true },
       twitter_username: { type: "string", required: false },
     },
   },

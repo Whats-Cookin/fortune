@@ -8,7 +8,8 @@
     "dev": "nodemon index.js",
     "start": "node index.js",
     "deploy:composite": "node scripts/deploy.mjs",
-    "runtime:composite": "node scripts/create_runtime_definition.mjs"
+    "runtime:composite": "node scripts/create_runtime_definition.mjs",
+    "graphiql": "node graphiql_server/graphiql.js"
   },
   "dependencies": {
     "@ceramicnetwork/http-client": "^2.5.0",

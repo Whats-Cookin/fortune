@@ -18,19 +18,20 @@ app.use(express.json());
 app.use(cors());
 
 app.post("/auth/github", async function (req, res) {
+  const { githubAuthCode, userAccount } = req.body;
+
+  if (!githubAuthCode || !userAccount) {
+    return res.status(400).json({
+      message: "githubAuthCode and userAccount are required fields",
+    });
+  }
+
+  const clientId = process.env.GITHUB_CLIENT_ID;
+  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+  const accessTokenUrl = process.env.GITHUB_ACCESS_TOKEN_URL;
+
   try {
-    const { githubAuthCode } = req.body;
-    if (!githubAuthCode) {
-      return res
-        .status(400)
-        .json({ message: "githubAuthCode is not specified or empty" });
-    }
-
-    const clientId = process.env.GITHUB_CLIENT_ID;
-    const clientSecret = process.env.GITHUB_CLIENT_SECRET;
-
-    const accessTokenUrl = process.env.GITHUB_ACCESS_TOKEN_URL;
-    const { data: tokens } = await axios.post(
+    const { data } = await axios.post(
       accessTokenUrl,
       {},
       {
@@ -42,8 +43,11 @@ app.post("/auth/github", async function (req, res) {
         headers: { Accept: "application/json" },
       }
     );
+    if (data.error) {
+      return res.status(400).json({ message: data.error });
+    }
 
-    const { access_token } = tokens;
+    const { access_token } = data;
 
     const { data: githubUserData } = await axios.get(
       "https://api.github.com/user",
@@ -59,22 +63,32 @@ app.post("/auth/github", async function (req, res) {
     const achievements = await getGithubUserAchievements(html_url);
     const achievementsArray = achievementsAsArray(achievements);
 
-    let variables = { ...relevantUserData, achievement: achievementsArray };
+    let variables = {
+      ...relevantUserData,
+      achievements: achievementsArray,
+      user_account: userAccount,
+    };
     variables = removeNullAndUndefined(variables);
 
-    const composeRes = await compose.executeQuery(
+    const composeDBResult = await compose.executeQuery(
       CREATE_GITHUB_USER,
       variables
     );
 
-    if (composeRes.errors) {
-      res.status(500).json({ message: composeRes.errors[0].message });
+    if (composeDBResult.errors) {
+      return res
+        .status(500)
+        .json({ message: composeDBResult.errors[0].message });
     }
 
-    res.status(201).json({ message: githubUserData, composedb: composeRes });
+    res
+      .status(201)
+      .json({ message: composeDBResult.data.createGithubUser.document });
   } catch (err) {
-    console.log(err.message);
-    res.status(500).json({ message: err.message });
+    let statusCode = err.response?.status || 500;
+    let message = err.response?.data?.message || err.message;
+
+    res.status(statusCode).json({ message });
   }
 });
 
