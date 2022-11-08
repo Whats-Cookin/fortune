@@ -62,11 +62,17 @@ services:
     command: ["yarn", "start"]
   
   composedb:
-    image: whatscookin/whatscookin-composedb:2.11
-    environment:
-      ADMIN_DIDS: did:key:z6Mkjs4ehQbTczpBKykv1jtJcxaFmyt2Ssd6wmT4K3xjcmAD
+    build:
+      context: ./composedb
     ports:
       - 7007:7007
+    environment:
+      GET_QUERY_PORT: 8000
+      ADMIN_DIDS: did:key:z6Mkjs4ehQbTczpBKykv1jtJcxaFmyt2Ssd6wmT4K3xjcmAD
+      DB_PATH: /root/.ceramic/indexing.sqlite 
+      DB_TABLE: kjzl6hvfrbw6c6iga46b1xj80g1a7m9p7y51qlw4yqyvtudk1yzbfprprcvfuhk
+    volumes:
+      - ./composedb/app:/usr/src/app
   
   credential-input:
     build:
@@ -93,6 +99,7 @@ services:
       DID_PRIVATE_KEY: 59e83c249b8947d1524a3f5f66326c78759c86d75573027e7bef571c3fddfb90
       GITHUB_USER_MODEL_STREAM_ID: kjzl6hvfrbw6c5no55wlukc496fea0iujswirvarqnode65vmh5fjb2w926sqph 
       CERAMIC_NODE_URL: http://composedb:7007
+      CERAMIC_QUERY_URL: http://composedb:8000
       COMPOSITE_FILE_NAME: github_user_composite.json
     volumes:
       - ./credential-oracle:/usr/src/app

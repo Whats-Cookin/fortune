@@ -18,7 +18,7 @@ export const CREATE_GITHUB_USER = `
         $public_gists: Int
         $followers: Int
         $following: Int
-        $created_at: DateTime!
+        $created_at: String!
         $achievements: [GithubUserGithubAchievementInput]
     ) {
     createGithubUser(

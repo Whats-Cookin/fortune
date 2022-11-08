@@ -200,6 +200,46 @@ cd contracts && yarn && yarn deploy // this commands deploys contracts to the bl
 cd ../tests/ && yarn && yarn test:e2e-backend // this command runs tests
 ```
 
+# Credentialling API
+
+Before using the credentialling API, deploy the composite in composedb node by running this command from the [credential-oracle](/credential-oracle/) directory. This will make the composedb node to start indexing this composite.
+
+```
+npm run deploy:composite
+```
+
+After that, please open http://localhost:3002/ and login with metamask. A button will appear. Click that button to authenticate yourself with your Github account. Once you authenticate, relevant public information will be collected from Github about you and will be stored in composedb. The information that was gathered will appear in the page. Next time you visit http://localhost:3002/ and authenticate with metamask, the page will fetch previously collected information about the user and display on the page.
+
+# Additional info about [credential-oracle](/credential-oracle/) example and its scripts
+
+It is important to have the composedb cli installed in the local machine to play with or change the schema. To install ceramic cli globally, run:
+
+```
+npm install --location=global @composedb/cli@^0.3.0
+```
+
+If the schema is changed, then the composedb model needs to be created again and new json for the composite needs to be created. Please be advised, when you create a new model, previously collected data under the previously generated model will not be associated with the new model. So, the previous records cannot be queried, unless of course, we are writing specific code for doing that. To create a new model run below command:
+
+```
+composedb composite:create data/github_user.schema -k 59e83c249b8947d1524a3f5f66326c78759c86d75573027e7bef571c3fddfb90 -c http://localhost:7007 -o github_user_composite.json
+```
+
+The value after the `-k` flag is a private key, that can be generated with the composedb cli but not important for development setup. Check this [link](https://composedb.js.org/docs/0.3.x/configuration#generating-a-did-private-key) to generate a new private key. Also, change the `DID_PRIVATE_KEY` environment variable in [docker-compose.yml](/docker-compose.yml) file under `credential-oracle`. It is possible to also generate a new did as admin dids for composedb. To generate a new `did` check this [link](https://composedb.js.org/docs/0.3.x/configuration#getting-the-did-value). Then change the environment variable called `ADMIN_DIDS` in [docker-compose.yml](/docker-compose.yml). It is possible to add multiple admin dids. Just add them as comma separated values like `ADMIN_DIDS=did:key:abd1231....vy,did:key:casldkfj12...asd`.
+
+Then deploy the composite as mentioned in [previous section](#credentialling-api).
+
+Then create the runtime definition by running below command in [credential-oracle](/credential-oracle/) direcotry.
+
+```
+npm run runtime:composite
+```
+
+It is also possible to run a graphiql server for development purposes, run below command in [credential-oracle](/credential-oracle/) directory.
+
+```
+npm run graphiql
+```
+
 # Troubleshooting
 
 Error: The tx doesn't have the correct nonce or the transaction freezes.

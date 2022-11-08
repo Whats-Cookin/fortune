@@ -2,8 +2,8 @@
 export const definition = {
   models: {
     GithubUser: {
-      id: "kjzl6hvfrbw6c5s68cd8auj0rq4xy9tmx6q9dbegujqmnq3aj6hdlp9hvljofwo",
-      accountRelation: { type: "single" },
+      id: "kjzl6hvfrbw6c6iga46b1xj80g1a7m9p7y51qlw4yqyvtudk1yzbfprprcvfuhk",
+      accountRelation: { type: "list" },
     },
   },
   objects: {
@@ -25,7 +25,7 @@ export const definition = {
       followers: { type: "integer", required: false },
       following: { type: "integer", required: false },
       github_id: { type: "integer", required: true },
-      created_at: { type: "datetime", required: true },
+      created_at: { type: "string", required: true },
       site_admin: { type: "boolean", required: false },
       achievements: {
         type: "list",
@@ -44,5 +44,5 @@ export const definition = {
     },
   },
   enums: {},
-  accountData: { githubUser: { type: "node", name: "GithubUser" } },
+  accountData: { githubUserList: { type: "connection", name: "GithubUser" } },
 };

@@ -15,13 +15,28 @@ const GithubAuth = (props) => {
   const queryParams = useQueryParams();
   const githubAuthCode = queryParams.get("code");
 
-  const [isRequesting, setIsRequesting] = useState(false);
+  const [isRequesting, setIsRequesting] = useState(true);
   const [userInfo, setUserInfo] = useState(null);
 
   useEffect(() => {
-    if (githubAuthCode && userAccount && !isRequesting) {
+    if (!githubAuthCode && userAccount) {
+      const getGithubProfileUrl = `${BACKEND_BASE_URL}/get-github-profile/${userAccount}`;
+      axios
+        .get(getGithubProfileUrl)
+        .then((res) => {
+          setUserInfo({
+            ...res.data.message,
+          });
+        })
+        .catch((err) => {
+          console.error(err.message);
+        })
+        .finally(() => {
+          setIsRequesting(false);
+        });
+    }
+    if (githubAuthCode && userAccount) {
       const githubAuthUrl = `${BACKEND_BASE_URL}/auth/github`;
-      setIsRequesting(true);
       axios
         .post(githubAuthUrl, {
           githubAuthCode,

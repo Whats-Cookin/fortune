@@ -13,9 +13,28 @@ import { CREATE_GITHUB_USER } from "./queries.js";
 
 const app = express();
 const port = process.env.PORT || 3007;
+const CERAMIC_QUERY_URL = process.env.CERAMIC_QUERY_URL;
 
 app.use(express.json());
 app.use(cors());
+
+app.get("/get-github-profile/:userAccount", async function (req, res) {
+  //  TECHDEBT
+  //  This API will be removed once composedb implements the feature to query with fields
+  //  https://forum.ceramic.network/t/queries-by-fields/260/6
+  const { userAccount } = req.params;
+  const queryUrl = `${CERAMIC_QUERY_URL}/get-github-profile/${userAccount}`;
+
+  try {
+    const result = await axios.get(queryUrl);
+    console.log("result >>>", result);
+    res.status(200).json({ message: result.data });
+  } catch (err) {
+    let statusCode = err.response?.status || 500;
+    let message = err.response?.data?.message || err.message;
+    res.status(statusCode).json({ message });
+  }
+});
 
 app.post("/auth/github", async function (req, res) {
   const { githubAuthCode, userAccount } = req.body;
