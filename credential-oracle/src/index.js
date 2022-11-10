@@ -27,7 +27,6 @@ app.get("/get-github-profile/:userAccount", async function (req, res) {
 
   try {
     const result = await axios.get(queryUrl);
-    console.log("result >>>", result);
     res.status(200).json({ message: result.data });
   } catch (err) {
     let statusCode = err.response?.status || 500;

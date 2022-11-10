@@ -6,7 +6,7 @@ COPY package.json yarn.lock ./
 
 RUN yarn
 
-COPY ./public ./public
 COPY ./src ./src
+COPY ./public ./public
 
 RUN yarn build

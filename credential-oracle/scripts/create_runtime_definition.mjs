@@ -19,7 +19,7 @@ try {
   await writeEncodedCompositeRuntime(
     ceramic,
     process.env.COMPOSITE_FILE_NAME,
-    "__generated__/definition.js"
+    "src/__generated__/definition.js"
   );
   console.log(
     "Successfully created runtime definition file at __generated__/definition.js"

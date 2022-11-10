@@ -82,9 +82,7 @@ services:
     environment:
       REACT_APP_GITHUB_AUTH_URL: https://github.com/login/oauth/authorize?client_id=f9d6e5ff6997e5ead4f5
       REACT_APP_BACKEND_BASE_URL: http://localhost:3007    
-    volumes:
-      - ./credential-input:/usr/src/app
-    command: ["yarn", "start"]
+    command: ["yarn", "start-prod"]
 
   credential-oracle:
     build:
@@ -101,6 +99,4 @@ services:
       CERAMIC_NODE_URL: http://composedb:7007
       CERAMIC_QUERY_URL: http://composedb:8000
       COMPOSITE_FILE_NAME: github_user_composite.json
-    volumes:
-      - ./credential-oracle:/usr/src/app
-    command: ["yarn", "dev"]
+    command: ["yarn", "start"]

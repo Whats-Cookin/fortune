@@ -205,7 +205,7 @@ cd ../tests/ && yarn && yarn test:e2e-backend // this command runs tests
 Before using the credentialling API, deploy the composite in composedb node by running this command from the [credential-oracle](/credential-oracle/) directory. This will make the composedb node to start indexing this composite.
 
 ```
-npm run deploy:composite
+yarn && yarn run deploy:composite
 ```
 
 After that, please open http://localhost:3002/ and login with metamask. A button will appear. Click that button to authenticate yourself with your Github account. Once you authenticate, relevant public information will be collected from Github about you and will be stored in composedb. The information that was gathered will appear in the page. Next time you visit http://localhost:3002/ and authenticate with metamask, the page will fetch previously collected information about the user and display on the page.

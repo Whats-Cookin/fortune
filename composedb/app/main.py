@@ -20,7 +20,12 @@ def get_github_profile(user_acount):
         FROM {DB_TABLE} 
         WHERE json_extract(stream_content, '$.user_account')="{user_acount}"
     '''
-    result = cursor.execute(query).fetchone()
+    result = None
+    try:
+        result = cursor.execute(query).fetchone()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Something went wrong.")
 
     if not result:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,

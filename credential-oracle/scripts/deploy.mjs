@@ -9,12 +9,6 @@ import { fromString } from "uint8arrays/from-string";
 import * as dotenv from "dotenv";
 dotenv.config();
 
-/**
- * 1. add the packages
- *  - @ceramicnetwork/http-client @composedb/devtools @composedb/devtools-node dids key-did-resolver uint8arrays/from-string dotenv
- * 2. Set the env variables
- */
-
 if (!process.env.GITHUB_USER_MODEL_STREAM_ID) {
   console.error("Missing env variable - GITHUB_USER_MODEL_STREAM_ID.");
   process.exit(1);
