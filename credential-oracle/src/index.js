@@ -1,8 +1,9 @@
+import crypto from "crypto";
 import cors from "cors";
 import axios from "axios";
 import express from "express";
+import NodeCache from "node-cache";
 import { getGithubUserAchievements } from "@whatscookin/github_user_badge_scraper";
-
 import { compose } from "./compose.js";
 import {
   removeNullAndUndefined,
@@ -11,6 +12,7 @@ import {
 } from "./utils.js";
 import { CREATE_GITHUB_USER } from "./queries.js";
 
+const cache = new NodeCache();
 const app = express();
 const port = process.env.PORT || 3007;
 const CERAMIC_QUERY_URL = process.env.CERAMIC_QUERY_URL;
@@ -108,6 +110,18 @@ app.post("/auth/github", async function (req, res) {
 
     res.status(statusCode).json({ message });
   }
+});
+
+app.get("/get-fiverr-magic-link", async (req, res, next) => {
+  const { userAccount } = req.query;
+  const magicToken = crypto.randomBytes(16).toString("hex");
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(magicToken)
+    .digest("hex");
+  cache.set(userAccount, hashedToken, 15 * 60); // expires in 15 minutes
+
+  res.status(201).json({ magicToken });
 });
 
 app.listen(port, () => {
