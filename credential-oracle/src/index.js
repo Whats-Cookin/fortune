@@ -111,5 +111,5 @@ app.post("/auth/github", async function (req, res) {
 });
 
 app.listen(port, () => {
-  console.log(`Reputation Oracle server listening the port ${port}`);
+  console.log(`Credential Oracle server listening on the port ${port}`);
 });
