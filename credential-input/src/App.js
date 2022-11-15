@@ -1,7 +1,10 @@
 import GithubAuth from "./containers/GithubAuth";
 import React, { useState, useEffect } from "react";
 import getWeb3 from "./web3";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import FiverrPage from "./containers/FiverrPage";
 import "./App.css";
+import FiverrAuth from "./containers/FiverrAuth";
 
 function App() {
   const web3 = getWeb3();
@@ -33,13 +36,30 @@ function App() {
     setIsMetamaskConnected(true);
   };
 
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: (
+        <>
+          <GithubAuth userAccount={mainAccount} />
+          <br />
+          <FiverrAuth />
+        </>
+      ),
+    },
+    {
+      path: "/cred/fiverr",
+      element: <FiverrPage userAccount={mainAccount} />,
+    },
+  ]);
+
   return (
     <div className="App">
       <header className="App-header">
         {!isMetamaskInstalled && <p> Metamask not installed</p>}
         {!isMetamaskConnected && <button onClick={connect}> Connect </button>}
         {isMetamaskConnected && mainAccount && (
-          <GithubAuth userAccount={mainAccount} />
+          <RouterProvider router={router} />
         )}
       </header>
     </div>
