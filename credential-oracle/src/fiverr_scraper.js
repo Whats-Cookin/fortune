@@ -21,9 +21,10 @@ export const scrapeFiverrProfile = async (url) => {
       ".seller-profile .description p"
     )?.textContent;
 
-    const overllRating = document.querySelector(
+    let overallRating = document.querySelector(
       ".rating-score.rating-num"
     )?.textContent;
+    overallRating = overallRating ? Number(overallRating) : overallRating;
 
     const languageElements = document.querySelectorAll(".languages ul li");
     const languages = Array.from(languageElements).map((lang) => {
@@ -87,7 +88,7 @@ export const scrapeFiverrProfile = async (url) => {
 
         return {
           type: textElement?.textContent,
-          rating: ratingElement?.textContent,
+          rating: Number(ratingElement?.textContent),
         };
       }
     );
@@ -110,7 +111,7 @@ export const scrapeFiverrProfile = async (url) => {
       location,
       education,
       description,
-      overllRating,
+      overallRating,
       languages,
       skills,
       notableClients,
