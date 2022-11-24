@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
+    "merge:composites": "node scripts/merge_composites.mjs",
     "deploy:composite": "node scripts/deploy.mjs",
     "runtime:composite": "node scripts/create_runtime_definition.mjs",
     "graphiql": "node graphiql_server/graphiql.js"
