@@ -11,6 +11,7 @@ import {
   achievementsAsArray,
 } from "./utils.js";
 import { CREATE_GITHUB_USER } from "./queries.js";
+import { scrapeFiverrProfile } from "./fiverr_scraper.js";
 
 const cache = new NodeCache();
 const app = express();
@@ -115,13 +116,120 @@ app.post("/auth/github", async function (req, res) {
 app.get("/get-fiverr-magic-link", async (req, res, next) => {
   const { userAccount } = req.query;
   const magicToken = crypto.randomBytes(16).toString("hex");
-  const hashedToken = crypto
-    .createHash("sha256")
-    .update(magicToken)
-    .digest("hex");
-  cache.set(userAccount, hashedToken, 15 * 60); // expires in 15 minutes
+  cache.set(userAccount, magicToken, 900); // expires in 15 minutes
 
   res.status(201).json({ magicToken });
+});
+
+app.post("/fiverr-profile", async (req, res) => {
+  const { url, userAccount } = req.body;
+  const magicLink = cache.get(userAccount);
+
+  if (!magicLink) {
+    return res
+      .status(401)
+      .json({ message: "Please try to take a new token and try again" });
+  }
+
+  let profile;
+  try {
+    profile = await scrapeFiverrProfile(url);
+  } catch (err) {
+    if (err.statusCode) {
+      return res.status(err.statusCode).json({ message: err.message });
+    }
+    return res.status(500).json({ message: "Something went wrong!" });
+  }
+
+  const indexOfMagicLink = profile.description.indexOf(magicLink);
+
+  if (indexOfMagicLink === -1) {
+    return res.status(403).json({ message: "Token not found in description." });
+  }
+
+  profile = removeNullAndUndefined(profile);
+
+  const CREATE_FIVERR_PROFILE = `
+    mutation (
+      $user_account: String!
+      $name: String!
+      $location: String
+      $education: [FiverrProfileEducationInput]
+      $description: String
+      $overallRating: Float
+      $languages: [FiverrProfileLanguageProficiencyInput]
+      $skills: [String]
+      $notableClients: [String]
+      $numOfReviews: Int
+      $ratingBreakdown: [FiverrProfileRatingBreakdownInput]
+      $starCounters: [FiverrProfileStarCountersInput]
+      $skillTests: [FiverrProfileSkillTestsInput]
+    ) {
+      createFiverrProfile(
+        input: {
+          content: {
+            user_account: $user_account
+            name: $name
+            location: $location
+            education: $education
+            description: $description
+            overallRating: $overallRating
+            languages: $languages
+            skills: $skills
+            notableClients: $notableClients
+            numOfReviews: $numOfReviews
+            ratingBreakdown: $ratingBreakdown
+            starCounters: $starCounters
+            skillTests: $skillTests
+          }
+        }
+      ){
+        document {
+          id
+          user_account
+          name
+          location
+          education {
+            degree
+            institution
+          }
+          description
+          overallRating
+          languages {
+            lang
+            proficiency
+          }
+          skills
+          notableClients
+          numOfReviews
+          ratingBreakdown {
+            type
+            rating
+          }
+          starCounters {
+            type
+            count
+          }
+          skillTests {
+            skill
+            scorePercentage
+            status
+          }
+        }
+      }
+    }
+  `;
+
+  const composeDBResult = await compose.executeQuery(CREATE_FIVERR_PROFILE, {
+    user_account: userAccount,
+    ...profile,
+  });
+
+  if (composeDBResult.errors) {
+    return res.status(500).json({ message: composeDBResult.errors[0].message });
+  }
+
+  res.status(200).json({ message: composeDBResult });
 });
 
 app.listen(port, () => {
