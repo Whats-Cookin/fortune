@@ -43,7 +43,6 @@ const FiverrPage = (props) => {
         })
         .catch((err) => {
           console.error(err.message);
-          setMagicLink("link_test");
         })
         .finally(() => {
           setIsRequestingMagicLink(false);
@@ -63,7 +62,6 @@ const FiverrPage = (props) => {
       })
       .catch((err) => {
         console.error(err.message);
-        setResult({ test: "result" });
       })
       .finally(() => {
         setIsRequestingFiverrLink(false);
@@ -88,7 +86,7 @@ const FiverrPage = (props) => {
           <p className="text">
             Copy and paste this token into your Fiverr profile's description
             section. Keep it until we are done getting your fiverr ratings and
-            info.
+            info. Token valid for 15 minutes only.
           </p>
           <div>
             <input id="magicLink" value={magicLink} readOnly />
