@@ -14,6 +14,10 @@
   color: inherit;
 }
 
+.btn-right {
+  margin-left: 12px;
+}
+
 .btn:hover {
   background-color: rgb(221, 221, 221);
 }
@@ -23,10 +27,9 @@
     display: block;
 }
 
-.icon__wrapper {
-    display: flex;
-    align-items: center;
-    height: 100%;
+.text {
+  font-size: 12px;
+  font-family: Inter;
 }
 
 pre {

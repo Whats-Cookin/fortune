@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react";
-import { FiverrIcon } from "../../Icons/FiverrIcon";
 import "./style.css";
 import axios from "axios";
 
@@ -36,11 +35,11 @@ const FiverrPage = (props) => {
   const getLink = useCallback(() => {
     if (userAccount) {
       setIsRequestingMagicLink(true);
-      const getFiverrMagicLink = `${BACKEND_BASE_URL}/get-fiverr-magic-link?user_account=${userAccount}`;
+      const getFiverrMagicLink = `${BACKEND_BASE_URL}/get-fiverr-magic-link?userAccount=${userAccount}`;
       axios
         .get(getFiverrMagicLink)
         .then((res) => {
-          setMagicLink(res.data.message);
+          setMagicLink(res.data.magicToken);
         })
         .catch((err) => {
           console.error(err.message);
@@ -56,9 +55,9 @@ const FiverrPage = (props) => {
     e.preventDefault();
     setIsRequestingFiverrLink(true);
     var url = document.getElementById("fiverrLink").value;
-    const sendFiverrLink = `${BACKEND_BASE_URL}/fiverr-url/`;
+    const sendFiverrLink = `${BACKEND_BASE_URL}/fiverr-profile/`;
     axios
-      .post(sendFiverrLink, { url })
+      .post(sendFiverrLink, { url, userAccount })
       .then((res) => {
         setResult(res.data);
       })
@@ -75,32 +74,34 @@ const FiverrPage = (props) => {
     <div>
       {userAccount && (
         <>
-          <p>1. Get Magic Link</p>
+          <p className="text">Get a token</p>
           <button
             disabled={isRequestingMagicLink}
             onClick={getLink}
             className="btn"
           >
             <span className="text__wrapper">
-              {isRequestingMagicLink ? "Loading..." : "Get the magic link"}
+              {isRequestingMagicLink ? "Loading..." : "Get a token"}
             </span>
-            <div className="icon__wrapper">
-              <FiverrIcon />
-            </div>
           </button>
 
-          <p>2. Copy and paste this magic link into your Fiverr profile</p>
+          <p className="text">
+            Copy and paste this token into your Fiverr profile's description
+            section. Keep it until we are done getting your fiverr ratings and
+            info.
+          </p>
           <div>
             <input id="magicLink" value={magicLink} readOnly />
-            <button onClick={copyLink} disabled={!magicLink}>
+            <button
+              className="btn-right"
+              onClick={copyLink}
+              disabled={!magicLink}
+            >
               {textCopy}
             </button>
           </div>
-          <p style={{ color: "#0008" }}>
-            keep it until we are done getting your fiverr ratings and info.
-          </p>
-          <p>
-            3. Then share your public profile url in the below box and confirm
+          <p className="text">
+            Then share your public profile url in the below box and confirm
           </p>
           <form onSubmit={sendLink}>
             <input
@@ -108,7 +109,11 @@ const FiverrPage = (props) => {
               placeholder="https://www.fiverr.com/chirag8838"
               id="fiverrLink"
             />
-            <button type="submit" disabled={isRequestingFiverrLink}>
+            <button
+              className="btn-right"
+              type="submit"
+              disabled={isRequestingFiverrLink}
+            >
               {isRequestingFiverrLink ? "Loading..." : "Confirm"}
             </button>
           </form>
