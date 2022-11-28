@@ -2,10 +2,18 @@ import puppeteer from "puppeteer";
 import randUserAgent from "rand-user-agent";
 
 export const scrapeFiverrProfile = async (url) => {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({ args: ["--no-sandbox"] });
 
   const page = await browser.newPage();
   const agent = randUserAgent("desktop");
+
+  let notFound = false;
+  page.on("response", async (response) => {
+    // Redirection means the page was not found
+    if (response.status() === 302 && response.url() === url) {
+      notFound = true;
+    }
+  });
 
   await page.setUserAgent(agent);
   await page.goto(url);
@@ -58,7 +66,7 @@ export const scrapeFiverrProfile = async (url) => {
     let numOfReviews = document.querySelector(
       ".reviews-header h2 span span"
     )?.textContent;
-    numOfReviews = Number(numOfReviews.split(",").join(""));
+    numOfReviews = Number(numOfReviews?.split(",").join(""));
 
     const starCountersElements =
       document.querySelectorAll(".stars-counters tr");
@@ -74,7 +82,7 @@ export const scrapeFiverrProfile = async (url) => {
         let [typeElement, _, countElement] = starCounterElement.children;
         type = typeElement.querySelector("button")?.textContent;
         count = removeParentheses(countElement?.textContent);
-        count = Number(count.split(",").join(""));
+        count = Number(count?.split(",").join(""));
 
         return { type, count };
       }
@@ -121,6 +129,12 @@ export const scrapeFiverrProfile = async (url) => {
       skillTests,
     };
   });
+
+  if (notFound) {
+    const err = new Error("Page not found");
+    err.statusCode = 404;
+    throw err;
+  }
 
   await browser.close();
 
