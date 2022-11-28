@@ -24,6 +24,8 @@
     "key-did-provider-ed25519": "^2.0.1",
     "key-did-resolver": "^2.1.3",
     "node-cache": "^5.1.2",
+    "puppeteer": "^19.2.2",
+    "rand-user-agent": "^1.0.90",
     "uint8arrays": "^4.0.2"
   },
   "devDependencies": {
