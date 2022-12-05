@@ -10,7 +10,7 @@ import {
   getRelevantGithubUserFieldsForComposeDB,
   achievementsAsArray,
 } from "./utils.js";
-import { CREATE_GITHUB_USER } from "./queries.js";
+import { CREATE_GITHUB_USER, CREATE_FIVERR_PROFILE } from "./queries.js";
 import { scrapeFiverrProfile } from "./fiverr_scraper.js";
 
 const cache = new NodeCache();
@@ -34,7 +34,7 @@ app.get("/get-github-profile/:userAccount", async function (req, res) {
   } catch (err) {
     let statusCode = err.response?.status || 500;
     let message = err.response?.data?.message || err.message;
-    res.status(statusCode).json({ message });
+    return res.status(statusCode).json({ message });
   }
 });
 
@@ -148,77 +148,6 @@ app.post("/fiverr-profile", async (req, res) => {
   }
 
   profile = removeNullAndUndefined(profile);
-
-  const CREATE_FIVERR_PROFILE = `
-    mutation (
-      $user_account: String!
-      $name: String!
-      $location: String
-      $education: [FiverrProfileEducationInput]
-      $description: String
-      $overallRating: Float
-      $languages: [FiverrProfileLanguageProficiencyInput]
-      $skills: [String]
-      $notableClients: [String]
-      $numOfReviews: Int
-      $ratingBreakdown: [FiverrProfileRatingBreakdownInput]
-      $starCounters: [FiverrProfileStarCountersInput]
-      $skillTests: [FiverrProfileSkillTestsInput]
-    ) {
-      createFiverrProfile(
-        input: {
-          content: {
-            user_account: $user_account
-            name: $name
-            location: $location
-            education: $education
-            description: $description
-            overallRating: $overallRating
-            languages: $languages
-            skills: $skills
-            notableClients: $notableClients
-            numOfReviews: $numOfReviews
-            ratingBreakdown: $ratingBreakdown
-            starCounters: $starCounters
-            skillTests: $skillTests
-          }
-        }
-      ){
-        document {
-          id
-          user_account
-          name
-          location
-          education {
-            degree
-            institution
-          }
-          description
-          overallRating
-          languages {
-            lang
-            proficiency
-          }
-          skills
-          notableClients
-          numOfReviews
-          ratingBreakdown {
-            type
-            rating
-          }
-          starCounters {
-            type
-            count
-          }
-          skillTests {
-            skill
-            scorePercentage
-            status
-          }
-        }
-      }
-    }
-  `;
 
   const composeDBResult = await compose.executeQuery(CREATE_FIVERR_PROFILE, {
     user_account: userAccount,
