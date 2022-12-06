@@ -10,7 +10,12 @@ import {
   getRelevantGithubUserFieldsForComposeDB,
   achievementsAsArray,
 } from "./utils.js";
-import { CREATE_GITHUB_USER, CREATE_FIVERR_PROFILE } from "./queries.js";
+import {
+  CREATE_GITHUB_USER,
+  CREATE_FIVERR_PROFILE,
+  SAVE_HASHED_API_KEY,
+  CREATE_PLATFORM_RATING,
+} from "./queries.js";
 import { scrapeFiverrProfile } from "./fiverr_scraper.js";
 
 const cache = new NodeCache();
@@ -159,6 +164,67 @@ app.post("/fiverr-profile", async (req, res) => {
   }
 
   res.status(200).json({ message: composeDBResult });
+});
+
+// to do - we need to think about how this will be authenticated
+app.get("/api-key", async (req, res) => {
+  const { platform } = req.query;
+  const apiKey = crypto.randomBytes(32).toString("hex");
+  const hashedApiKey = crypto.createHash("sha256").update(apiKey).digest("hex");
+
+  const composeDBResult = await compose.executeQuery(SAVE_HASHED_API_KEY, {
+    platform,
+    hashed_api_key: hashedApiKey,
+  });
+
+  if (composeDBResult.errors) {
+    return res.status(500).json({ message: composeDBResult.errors[0].message });
+  }
+
+  res.status(201).json({ apiKey });
+});
+
+app.post("/platform-rating", async (req, res) => {
+  let apiKey = req.header("x-api-key");
+
+  const { platformName, userName, userId, rating } = req.body;
+  console.log(platformName, "platformName");
+
+  // to do get the hashed_api_key stored in composedb
+  let hashedApiKeyInDb;
+  const queryUrl = `${CERAMIC_QUERY_URL}/hashed-api-key/${platformName}`;
+
+  try {
+    const response = await axios.get(queryUrl);
+    hashedApiKeyInDb = response.data.hashed_api_key;
+  } catch (err) {
+    let statusCode = err.response?.status || 500;
+    let message = err.response?.data?.message || err.message;
+    return res.status(statusCode).json({ message });
+  }
+
+  const hashedApiKey = crypto.createHash("sha256").update(apiKey).digest("hex");
+  console.log("hashedApiKey", hashedApiKey);
+  console.log("hashedApiKeyInDb", hashedApiKeyInDb);
+
+  if (hashedApiKeyInDb !== hashedApiKey) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const composeDBResult = await compose.executeQuery(CREATE_PLATFORM_RATING, {
+    platform_name: platformName,
+    user_name: userName,
+    user_id: userId,
+    rating,
+  });
+
+  if (composeDBResult.errors) {
+    return res.status(500).json({ message: composeDBResult.errors[0].message });
+  }
+
+  res
+    .status(201)
+    .json({ message: composeDBResult.data.createPlatformRating.document });
 });
 
 app.listen(port, () => {

@@ -70,7 +70,9 @@ services:
       GET_QUERY_PORT: 8000
       ADMIN_DIDS: did:key:z6Mkjs4ehQbTczpBKykv1jtJcxaFmyt2Ssd6wmT4K3xjcmAD
       DB_PATH: /root/.ceramic/indexing.sqlite 
-      DB_TABLE: kjzl6hvfrbw6c6iga46b1xj80g1a7m9p7y51qlw4yqyvtudk1yzbfprprcvfuhk
+      DB_TABLE_GITHUB: kjzl6hvfrbw6c6iga46b1xj80g1a7m9p7y51qlw4yqyvtudk1yzbfprprcvfuhk
+      DB_TABLE_FIVERR: kjzl6hvfrbw6c9vg1q5mo65vojdd131ezuakjrunhgca5qk0ty62s9ui3hqjz2z
+      DB_TABLE_PLATFORM_API_KEY: kjzl6hvfrbw6c8zflw592p1j39bxfg3jhlngvxlkybghx9cwy8i5zc1t9b3cqj1
     volumes:
       - ./composedb/app:/usr/src/app
   

@@ -9,6 +9,14 @@ export const definition = {
       id: "kjzl6hvfrbw6c9vg1q5mo65vojdd131ezuakjrunhgca5qk0ty62s9ui3hqjz2z",
       accountRelation: { type: "list" },
     },
+    PlatformApiKey: {
+      id: "kjzl6hvfrbw6c8zflw592p1j39bxfg3jhlngvxlkybghx9cwy8i5zc1t9b3cqj1",
+      accountRelation: { type: "list" },
+    },
+    PlatformRating: {
+      id: "kjzl6hvfrbw6c9wf93dboz48v4mops0l8mb8hm57q9blu3evea8js6vxeq27knv",
+      accountRelation: { type: "list" },
+    },
   },
   objects: {
     GithubUserGithubAchievement: {
@@ -135,10 +143,22 @@ export const definition = {
         },
       },
     },
+    PlatformApiKey: {
+      platform: { type: "string", required: true },
+      hashed_api_key: { type: "string", required: true },
+    },
+    PlatformRating: {
+      rating: { type: "integer", required: false },
+      user_id: { type: "string", required: false },
+      user_name: { type: "string", required: false },
+      platform_name: { type: "string", required: true },
+    },
   },
   enums: {},
   accountData: {
     githubUserList: { type: "connection", name: "GithubUser" },
     fiverrProfileList: { type: "connection", name: "FiverrProfile" },
+    platformApiKeyList: { type: "connection", name: "PlatformApiKey" },
+    platformRatingList: { type: "connection", name: "PlatformRating" },
   },
 };
