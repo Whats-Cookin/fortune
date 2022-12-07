@@ -14,7 +14,9 @@ import {
   CREATE_GITHUB_USER,
   CREATE_FIVERR_PROFILE,
   SAVE_HASHED_API_KEY,
+  UPDATE_HASHED_API_KEY,
   CREATE_PLATFORM_RATING,
+  UPDATE_PLATFORM_RATING,
 } from "./queries.js";
 import { scrapeFiverrProfile } from "./fiverr_scraper.js";
 
@@ -169,13 +171,32 @@ app.post("/fiverr-profile", async (req, res) => {
 // to do - we need to think about how this will be authenticated
 app.get("/api-key", async (req, res) => {
   const { platform } = req.query;
+
+  let hashedApiKeyInDB;
+  let id;
+  const queryUrl = `${CERAMIC_QUERY_URL}/hashed-api-key/${platform}`;
+
+  try {
+    const response = await axios.get(queryUrl);
+    hashedApiKeyInDB = response.data.hashed_api_key;
+    id = response.data.id;
+  } catch (err) {
+    let statusCode = err.response?.status || 500;
+    if (statusCode !== 404) {
+      let message = err.response?.data?.message || err.message;
+      return res.status(statusCode).json({ message });
+    }
+  }
+
+  const query = hashedApiKeyInDB ? UPDATE_HASHED_API_KEY : SAVE_HASHED_API_KEY;
+  const variables = hashedApiKeyInDB ? { id } : { platform };
+
   const apiKey = crypto.randomBytes(32).toString("hex");
   const hashedApiKey = crypto.createHash("sha256").update(apiKey).digest("hex");
 
-  const composeDBResult = await compose.executeQuery(SAVE_HASHED_API_KEY, {
-    platform,
-    hashed_api_key: hashedApiKey,
-  });
+  variables.hashed_api_key = hashedApiKey;
+
+  const composeDBResult = await compose.executeQuery(query, variables);
 
   if (composeDBResult.errors) {
     return res.status(500).json({ message: composeDBResult.errors[0].message });
@@ -188,7 +209,6 @@ app.post("/platform-rating", async (req, res) => {
   let apiKey = req.header("x-api-key");
 
   const { platformName, userName, userId, rating } = req.body;
-  console.log(platformName, "platformName");
 
   // to do get the hashed_api_key stored in composedb
   let hashedApiKeyInDb;
@@ -199,32 +219,55 @@ app.post("/platform-rating", async (req, res) => {
     hashedApiKeyInDb = response.data.hashed_api_key;
   } catch (err) {
     let statusCode = err.response?.status || 500;
-    let message = err.response?.data?.message || err.message;
+    let message =
+      statusCode === 404
+        ? "Wrong API Key"
+        : err.response?.data?.message || err.message;
     return res.status(statusCode).json({ message });
   }
 
   const hashedApiKey = crypto.createHash("sha256").update(apiKey).digest("hex");
-  console.log("hashedApiKey", hashedApiKey);
-  console.log("hashedApiKeyInDb", hashedApiKeyInDb);
 
   if (hashedApiKeyInDb !== hashedApiKey) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const composeDBResult = await compose.executeQuery(CREATE_PLATFORM_RATING, {
-    platform_name: platformName,
-    user_name: userName,
-    user_id: userId,
-    rating,
-  });
+  let existingRating;
+  const platformRatingURL = `${CERAMIC_QUERY_URL}/platform-rating/${platformName}/${userId}`;
+  try {
+    const response = await axios.get(platformRatingURL);
+    existingRating = response.data;
+  } catch (err) {
+    let statusCode = err.response?.status || 500;
+    if (statusCode !== 404) {
+      let message = err.response?.data?.message || err.message;
+      return res.status(statusCode).json({ message });
+    }
+  }
+  const query = existingRating
+    ? UPDATE_PLATFORM_RATING
+    : CREATE_PLATFORM_RATING;
+
+  let variables = existingRating
+    ? { id: existingRating.id, user_name: userName, rating }
+    : {
+        platform_name: platformName,
+        user_name: userName,
+        user_id: userId,
+        rating,
+      };
+
+  const composeDBResult = await compose.executeQuery(query, variables);
 
   if (composeDBResult.errors) {
     return res.status(500).json({ message: composeDBResult.errors[0].message });
   }
 
-  res
-    .status(201)
-    .json({ message: composeDBResult.data.createPlatformRating.document });
+  const doc = existingRating
+    ? composeDBResult.data.updatePlatformRating.document
+    : composeDBResult.data.createPlatformRating.document;
+
+  res.status(201).json({ message: doc });
 });
 
 app.listen(port, () => {

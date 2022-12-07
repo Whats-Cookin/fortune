@@ -14,7 +14,7 @@ export const definition = {
       accountRelation: { type: "list" },
     },
     PlatformRating: {
-      id: "kjzl6hvfrbw6c9wf93dboz48v4mops0l8mb8hm57q9blu3evea8js6vxeq27knv",
+      id: "kjzl6hvfrbw6cb02b8ypubp8ckvov8e9cn5hw80c8tdbxtbt9a0z59ky0eqb335",
       accountRelation: { type: "list" },
     },
   },
@@ -148,7 +148,7 @@ export const definition = {
       hashed_api_key: { type: "string", required: true },
     },
     PlatformRating: {
-      rating: { type: "integer", required: false },
+      rating: { type: "float", required: false },
       user_id: { type: "string", required: false },
       user_name: { type: "string", required: false },
       platform_name: { type: "string", required: true },

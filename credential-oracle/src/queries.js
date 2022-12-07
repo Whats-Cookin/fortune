@@ -168,12 +168,32 @@ export const SAVE_HASHED_API_KEY = `
   }
 `;
 
+export const UPDATE_HASHED_API_KEY = `
+  mutation (
+    $id: ID!
+    $hashed_api_key: String! 
+  ) {
+    updatePlatformApiKey(
+      input: {
+        id: $id
+        content: {
+          hashed_api_key: $hashed_api_key
+        }
+      }
+    ){
+      document {
+        id
+      }
+    }
+  }
+`;
+
 export const CREATE_PLATFORM_RATING = `
   mutation (
     $platform_name: String! 
     $user_name: String
     $user_id: String
-    $rating: Int
+    $rating: Float
   ) {
     createPlatformRating(
       input: {
@@ -181,6 +201,32 @@ export const CREATE_PLATFORM_RATING = `
           platform_name: $platform_name 
           user_name: $user_name
           user_id: $user_id
+          rating: $rating
+        }
+      }
+    ){
+      document {
+        id
+        platform_name
+        user_name
+        user_id
+        rating
+      }
+    }
+  }
+`;
+
+export const UPDATE_PLATFORM_RATING = `
+  mutation (
+    $id: ID!
+    $user_name: String
+    $rating: Float
+  ) {
+    updatePlatformRating(
+      input: {
+        id: $id
+        content: {
+          user_name: $user_name
           rating: $rating
         }
       }
