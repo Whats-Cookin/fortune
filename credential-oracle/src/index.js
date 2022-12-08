@@ -177,7 +177,7 @@ app.post("/fiverr-profile", async (req, res) => {
   if (indexOfMagicLink === -1) {
     return res.status(403).json({ message: "Token not found in description." });
   }
-  if (!indexOfMagicLink) {
+  if (indexOfMagicLink === undefined) {
     return res.status(500).json({ message: "Something went wrong!" });
   }
 
