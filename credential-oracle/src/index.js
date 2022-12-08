@@ -172,20 +172,24 @@ app.post("/fiverr-profile", async (req, res) => {
     return res.status(500).json({ message: "Something went wrong!" });
   }
 
-  const indexOfMagicLink = profile.description.indexOf(magicLink);
+  const indexOfMagicLink = profile.description?.indexOf(magicLink);
 
   if (indexOfMagicLink === -1) {
     return res.status(403).json({ message: "Token not found in description." });
   }
+  if (!indexOfMagicLink) {
+    return res.status(500).json({ message: "Something went wrong!" });
+  }
 
   profile = removeNullAndUndefined(profile);
 
-  const query = existingProfile ? UPDATE_FIVERR_PROFILE : CREATE_FIVERR_PROFILE;
-  let variables = {
-    user_account: userAccount,
-    ...profile,
-  };
-  if (existingProfile) variables.id = existingProfile.id;
+  let query = CREATE_FIVERR_PROFILE;
+  let variables = { user_account: userAccount, ...profile };
+
+  if (existingProfile) {
+    query = UPDATE_FIVERR_PROFILE;
+    variables = { id: existingProfile.id, ...variables };
+  }
 
   const composeDBResult = await compose.executeQuery(query, variables);
 
