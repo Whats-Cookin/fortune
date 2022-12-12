@@ -76,7 +76,7 @@ def get_fiverr_profile(user_acount):
 
 
 @app.get("/hashed-api-key/{platform}")
-def get_github_profile(platform):
+def get_hashed_api_key(platform):
     # TECHDEBT
     # This API will be removed once composedb implements the feature to query with fields
     # https://forum.ceramic.network/t/queries-by-fields/260/6
@@ -87,23 +87,16 @@ def get_github_profile(platform):
     '''
     result = None
     try:
-        result = cursor.execute(query).fetchone()
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail=f"Something went wrong.")
-
-    if not result:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Api key for platform: {platform} not found")
-    id, json_string = result
-    record = json.loads(json_string)
-    record["id"] = id
+        result = fetch_from_db(query)
+    except Exception as e:
+        raise e
+    record = format_doc(result)
 
     return record
 
 
 @app.get("/platform-rating/{platform}/{user_id}")
-def get_github_profile(platform, user_id):
+def get_platform_rating(platform, user_id):
     # TECHDEBT
     # This API will be removed once composedb implements the feature to query with fields
     # https://forum.ceramic.network/t/queries-by-fields/260/6
@@ -115,17 +108,10 @@ def get_github_profile(platform, user_id):
     '''
     result = None
     try:
-        result = cursor.execute(query).fetchone()
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail=f"Something went wrong.")
-
-    if not result:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Api key for platform: {platform} not found")
-    id, json_string = result
-    record = json.loads(json_string)
-    record["id"] = id
+        result = fetch_from_db(query)
+    except Exception as e:
+        raise e
+    record = format_doc(result)
 
     return record
 
