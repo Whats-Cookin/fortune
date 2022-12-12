@@ -148,6 +148,79 @@ export const CREATE_FIVERR_PROFILE = `
   }
 `;
 
+export const UPDATE_FIVERR_PROFILE = `
+  mutation (
+    $id: ID!
+    $user_account: String
+    $name: String
+    $location: String
+    $education: [FiverrProfileEducationInput]
+    $description: String
+    $overallRating: Float
+    $languages: [FiverrProfileLanguageProficiencyInput]
+    $skills: [String]
+    $notableClients: [String]
+    $numOfReviews: Int
+    $ratingBreakdown: [FiverrProfileRatingBreakdownInput]
+    $starCounters: [FiverrProfileStarCountersInput]
+    $skillTests: [FiverrProfileSkillTestsInput]
+  ) {
+    updateFiverrProfile(
+      input: {
+        id: $id
+        content: {
+          user_account: $user_account
+          name: $name
+          location: $location
+          education: $education
+          description: $description
+          overallRating: $overallRating
+          languages: $languages
+          skills: $skills
+          notableClients: $notableClients
+          numOfReviews: $numOfReviews
+          ratingBreakdown: $ratingBreakdown
+          starCounters: $starCounters
+          skillTests: $skillTests
+        }
+      }
+    ){
+      document {
+        id
+        user_account
+        name
+        location
+        education {
+          degree
+          institution
+        }
+        description
+        overallRating
+        languages {
+          lang
+          proficiency
+        }
+        skills
+        notableClients
+        numOfReviews
+        ratingBreakdown {
+          type
+          rating
+        }
+        starCounters {
+          type
+          count
+        }
+        skillTests {
+          skill
+          scorePercentage
+          status
+        }
+      }
+    }
+  }
+`;
+
 export const SAVE_HASHED_API_KEY = `
   mutation (
     $platform: String! 

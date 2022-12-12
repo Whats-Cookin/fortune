@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import "./style.css";
 import axios from "axios";
 
@@ -32,6 +32,22 @@ const FiverrPage = (props) => {
     }, 3000);
   }, []);
 
+  useEffect(() => {
+    const getFiverrProfileURL = `${BACKEND_BASE_URL}/fiverr-profile/${userAccount}`;
+    setIsRequestingFiverrLink(true);
+    axios
+      .get(getFiverrProfileURL)
+      .then((res) => {
+        setResult(res.data.message);
+      })
+      .catch((err) => {
+        console.error(err.message);
+      })
+      .finally(() => {
+        setIsRequestingFiverrLink(false);
+      });
+  }, []);
+
   const getLink = useCallback(() => {
     if (userAccount) {
       setIsRequestingMagicLink(true);
@@ -58,7 +74,7 @@ const FiverrPage = (props) => {
     axios
       .post(sendFiverrLink, { url, userAccount })
       .then((res) => {
-        setResult(res.data);
+        setResult(res.data.message);
       })
       .catch((err) => {
         console.error(err.message);

@@ -13,6 +13,7 @@ import {
 import {
   CREATE_GITHUB_USER,
   CREATE_FIVERR_PROFILE,
+  UPDATE_FIVERR_PROFILE,
   SAVE_HASHED_API_KEY,
   UPDATE_HASHED_API_KEY,
   CREATE_PLATFORM_RATING,
@@ -128,6 +129,20 @@ app.get("/get-fiverr-magic-link", async (req, res, next) => {
   res.status(201).json({ magicToken });
 });
 
+app.get("/fiverr-profile/:userAccount", async (req, res) => {
+  const { userAccount } = req.params;
+  const queryUrl = `${CERAMIC_QUERY_URL}/fiverr-profile/${userAccount}`;
+
+  try {
+    const result = await axios.get(queryUrl);
+    res.status(200).json({ message: result.data });
+  } catch (err) {
+    let statusCode = err.response?.status || 500;
+    let message = err.response?.data?.message || err.message;
+    return res.status(statusCode).json({ message });
+  }
+});
+
 app.post("/fiverr-profile", async (req, res) => {
   const { url, userAccount } = req.body;
   const magicLink = cache.get(userAccount);
@@ -136,6 +151,19 @@ app.post("/fiverr-profile", async (req, res) => {
     return res
       .status(401)
       .json({ message: "Please try to take a new token and try again" });
+  }
+
+  let existingProfile;
+  const queryUrl = `${CERAMIC_QUERY_URL}/fiverr-profile/${userAccount}`;
+  try {
+    const response = await axios.get(queryUrl);
+    existingProfile = response.data;
+  } catch (err) {
+    let statusCode = err.response?.status || 500;
+    if (statusCode !== 404) {
+      let message = err.response?.data?.message || err.message;
+      return res.status(statusCode).json({ message });
+    }
   }
 
   let profile;
@@ -148,18 +176,26 @@ app.post("/fiverr-profile", async (req, res) => {
     return res.status(500).json({ message: "Something went wrong!" });
   }
 
-  const indexOfMagicLink = profile.description.indexOf(magicLink);
+  const indexOfMagicLink = profile.description?.indexOf(magicLink);
 
   if (indexOfMagicLink === -1) {
     return res.status(403).json({ message: "Token not found in description." });
   }
+  if (indexOfMagicLink === undefined) {
+    return res.status(500).json({ message: "Something went wrong!" });
+  }
 
   profile = removeNullAndUndefined(profile);
 
-  const composeDBResult = await compose.executeQuery(CREATE_FIVERR_PROFILE, {
-    user_account: userAccount,
-    ...profile,
-  });
+  let query = CREATE_FIVERR_PROFILE;
+  let variables = { user_account: userAccount, ...profile };
+
+  if (existingProfile) {
+    query = UPDATE_FIVERR_PROFILE;
+    variables = { id: existingProfile.id, ...variables };
+  }
+
+  const composeDBResult = await compose.executeQuery(query, variables);
 
   if (composeDBResult.errors) {
     return res.status(500).json({ message: composeDBResult.errors[0].message });
