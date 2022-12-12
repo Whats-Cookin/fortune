@@ -210,6 +210,8 @@ yarn && yarn run deploy:composite
 
 After that, please open http://localhost:3002/ and login with metamask. A button will appear. Click that button to authenticate yourself with your Github account. Once you authenticate, relevant public information will be collected from Github about you and will be stored in composedb. The information that was gathered will appear in the page. Next time you visit http://localhost:3002/ and authenticate with metamask, the page will fetch previously collected information about the user and display on the page.
 
+Click on `Add your fiverr ratings` to go to the fiverr page. Then click `Get a token` button to get a token. Then, copy the token and paste the token in your fiverr description. Your fiverr ratings and related information will be collected from the page.
+
 # Additional info about [credential-oracle](/credential-oracle/) example and its scripts
 
 It is important to have the composedb cli installed in the local machine to play with or change the schema. To install ceramic cli globally, run:
