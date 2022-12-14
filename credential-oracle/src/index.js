@@ -1,16 +1,23 @@
+import crypto from "crypto";
 import cors from "cors";
 import axios from "axios";
 import express from "express";
+import NodeCache from "node-cache";
 import { getGithubUserAchievements } from "@whatscookin/github_user_badge_scraper";
-
 import { compose } from "./compose.js";
 import {
   removeNullAndUndefined,
   getRelevantGithubUserFieldsForComposeDB,
   achievementsAsArray,
 } from "./utils.js";
-import { CREATE_GITHUB_USER } from "./queries.js";
+import {
+  CREATE_GITHUB_USER,
+  CREATE_FIVERR_PROFILE,
+  UPDATE_FIVERR_PROFILE,
+} from "./queries.js";
+import { scrapeFiverrProfile } from "./fiverr_scraper.js";
 
+const cache = new NodeCache();
 const app = express();
 const port = process.env.PORT || 3007;
 const CERAMIC_QUERY_URL = process.env.CERAMIC_QUERY_URL;
@@ -31,7 +38,7 @@ app.get("/get-github-profile/:userAccount", async function (req, res) {
   } catch (err) {
     let statusCode = err.response?.status || 500;
     let message = err.response?.data?.message || err.message;
-    res.status(statusCode).json({ message });
+    return res.status(statusCode).json({ message });
   }
 });
 
@@ -108,6 +115,89 @@ app.post("/auth/github", async function (req, res) {
 
     res.status(statusCode).json({ message });
   }
+});
+
+app.get("/get-fiverr-magic-link", async (req, res, next) => {
+  const { userAccount } = req.query;
+  const magicToken = crypto.randomBytes(16).toString("hex");
+  cache.set(userAccount, magicToken, 900); // expires in 15 minutes
+
+  res.status(201).json({ magicToken });
+});
+
+app.get("/fiverr-profile/:userAccount", async (req, res) => {
+  const { userAccount } = req.params;
+  const queryUrl = `${CERAMIC_QUERY_URL}/fiverr-profile/${userAccount}`;
+
+  try {
+    const result = await axios.get(queryUrl);
+    res.status(200).json({ message: result.data });
+  } catch (err) {
+    let statusCode = err.response?.status || 500;
+    let message = err.response?.data?.message || err.message;
+    return res.status(statusCode).json({ message });
+  }
+});
+
+app.post("/fiverr-profile", async (req, res) => {
+  const { url, userAccount } = req.body;
+  const magicLink = cache.get(userAccount);
+
+  if (!magicLink) {
+    return res
+      .status(401)
+      .json({ message: "Please try to take a new token and try again" });
+  }
+
+  let existingProfile;
+  const queryUrl = `${CERAMIC_QUERY_URL}/fiverr-profile/${userAccount}`;
+  try {
+    const response = await axios.get(queryUrl);
+    existingProfile = response.data;
+  } catch (err) {
+    let statusCode = err.response?.status || 500;
+    if (statusCode !== 404) {
+      let message = err.response?.data?.message || err.message;
+      return res.status(statusCode).json({ message });
+    }
+  }
+
+  let profile;
+  try {
+    profile = await scrapeFiverrProfile(url);
+  } catch (err) {
+    if (err.statusCode) {
+      return res.status(err.statusCode).json({ message: err.message });
+    }
+    return res.status(500).json({ message: "Something went wrong!" });
+  }
+
+  const indexOfMagicLink = profile.description?.indexOf(magicLink);
+
+  if (indexOfMagicLink === -1) {
+    return res.status(403).json({ message: "Token not found in description." });
+  }
+  if (indexOfMagicLink === undefined) {
+    return res.status(500).json({ message: "Something went wrong!" });
+  }
+
+  profile = removeNullAndUndefined(profile);
+
+  let query = CREATE_FIVERR_PROFILE;
+  let variables = { user_account: userAccount, ...profile };
+
+  if (existingProfile) {
+    query = UPDATE_FIVERR_PROFILE;
+    variables = { id: existingProfile.id, ...variables };
+  }
+
+  const composeDBResult = await compose.executeQuery(query, variables);
+
+  if (composeDBResult.errors) {
+    return res.status(500).json({ message: composeDBResult.errors[0].message });
+  }
+
+  res.status(200).json({ message: composeDBResult });
 });
 
 app.listen(port, () => {
