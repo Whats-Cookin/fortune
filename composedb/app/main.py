@@ -7,7 +7,6 @@ from db import cursor
 PORT = os.getenv('GET_QUERY_PORT', 8000)
 DB_TABLE_GITHUB = os.getenv('DB_TABLE_GITHUB')
 DB_TABLE_FIVERR = os.getenv('DB_TABLE_FIVERR')
-DB_TABLE_PLATFORM_API_KEY = os.getenv('DB_TABLE_PLATFORM_API_KEY')
 DB_TABLE_PLATFORM_RATING = os.getenv('DB_TABLE_PLATFORM_RATING')
 
 app = FastAPI()
@@ -64,26 +63,6 @@ def get_fiverr_profile(user_acount):
         SELECT stream_id, stream_content 
         FROM {DB_TABLE_FIVERR} 
         WHERE json_extract(stream_content, '$.user_account')="{user_acount}"
-    '''
-    result = None
-    try:
-        result = fetch_from_db(query)
-    except Exception as e:
-        raise e
-    record = format_doc(result)
-
-    return record
-
-
-@app.get("/hashed-api-key/{platform}")
-def get_hashed_api_key(platform):
-    # TECHDEBT
-    # This API will be removed once composedb implements the feature to query with fields
-    # https://forum.ceramic.network/t/queries-by-fields/260/6
-    query = f'''
-        SELECT stream_id, stream_content 
-        FROM {DB_TABLE_PLATFORM_API_KEY} 
-        WHERE json_extract(stream_content, '$.platform')="{platform}"
     '''
     result = None
     try:

@@ -5,8 +5,9 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/index.js",
-    "start": "node src/index.js",
+    "migrate": "prisma migrate deploy",
+    "dev": "npm run migrate && nodemon src/index.js",
+    "start": "npm run migrate && node src/index.js",
     "merge:composites": "node scripts/merge_composites.mjs",
     "deploy:composite": "node scripts/deploy.mjs",
     "runtime:composite": "node scripts/create_runtime_definition.mjs",
@@ -16,6 +17,7 @@
     "@ceramicnetwork/http-client": "^2.5.0",
     "@composedb/devtools": "^0.3.0",
     "@composedb/devtools-node": "^0.3.0",
+    "@prisma/client": "^4.8.0",
     "@whatscookin/github_user_badge_scraper": "^1.0.3",
     "axios": "^1.1.2",
     "cors": "^2.8.5",
@@ -30,6 +32,7 @@
     "uint8arrays": "^4.0.2"
   },
   "devDependencies": {
-    "nodemon": "^2.0.20"
+    "nodemon": "^2.0.20",
+    "prisma": "^4.8.0"
   }
 }

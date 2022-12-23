@@ -18,7 +18,6 @@ const ceramic = new CeramicClient(process.env.CERAMIC_NODE_URL);
 const loadSources = [
   "github_user_composite.json",
   "fiverr_profile_composite.json",
-  "platform_api_key_composite.json",
   "platform_rating_composite.json",
 ].map(async (path) => await readEncodedComposite(ceramic, path));
 

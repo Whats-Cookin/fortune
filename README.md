@@ -200,7 +200,7 @@ cd contracts && yarn && yarn deploy // this commands deploys contracts to the bl
 cd ../tests/ && yarn && yarn test:e2e-backend // this command runs tests
 ```
 
-# Credentialling API
+# Credentialing API
 
 Before using the credentialling API, deploy the composite in composedb node by running this command from the [credential-oracle](/credential-oracle/) directory. This will make the composedb node to start indexing this composite.
 
@@ -211,6 +211,10 @@ yarn && yarn run deploy:composite
 After that, please open http://localhost:3002/ and login with metamask. A button will appear. Click that button to authenticate yourself with your Github account. Once you authenticate, relevant public information will be collected from Github about you and will be stored in composedb. The information that was gathered will appear in the page. Next time you visit http://localhost:3002/ and authenticate with metamask, the page will fetch previously collected information about the user and display on the page.
 
 Click on `Add your fiverr ratings` to go to the fiverr page. Then click `Get a token` button to get a token. Then, copy the token and paste the token in your fiverr description. Your fiverr ratings and related information will be collected from the page.
+
+### Direct update from other platforms
+
+Go to http://localhost:3002/cred/platform. Get an api key after entering a name of the platform. Use the API key to update user reviews. This API key should be used as `x-api-key` header.
 
 # Additional info about [credential-oracle](/credential-oracle/) example and its scripts
 

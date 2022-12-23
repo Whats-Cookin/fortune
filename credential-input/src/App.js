@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import getWeb3 from "./web3";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import FiverrPage from "./containers/FiverrPage";
+import PlatformRating from "./containers/PlatformRating";
 import "./App.css";
 import FiverrAuth from "./containers/FiverrAuth";
 
@@ -50,6 +51,10 @@ function App() {
     {
       path: "/cred/fiverr",
       element: <FiverrPage userAccount={mainAccount} />,
+    },
+    {
+      path: "/cred/platform",
+      element: <PlatformRating userAccount={mainAccount} />,
     },
   ]);
 
