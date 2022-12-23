@@ -14,8 +14,15 @@ import {
   CREATE_GITHUB_USER,
   CREATE_FIVERR_PROFILE,
   UPDATE_FIVERR_PROFILE,
+  SAVE_HASHED_API_KEY,
+  UPDATE_HASHED_API_KEY,
+  CREATE_PLATFORM_RATING,
+  UPDATE_PLATFORM_RATING,
 } from "./queries.js";
 import { scrapeFiverrProfile } from "./fiverr_scraper.js";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 const cache = new NodeCache();
 const app = express();
@@ -198,6 +205,90 @@ app.post("/fiverr-profile", async (req, res) => {
   }
 
   res.status(200).json({ message: composeDBResult });
+});
+
+// to do - we need to think about how this will be authenticated
+app.get("/api-key", async (req, res) => {
+  const { platform } = req.query;
+
+  if (!platform) {
+    return res.status(400).json({ message: "platform is required" });
+  }
+
+  const apiKey = crypto.randomBytes(32).toString("hex");
+  const hashedApiKey = crypto.createHash("sha256").update(apiKey).digest("hex");
+
+  await prisma.platformApiKey.upsert({
+    create: {
+      platform,
+      hashedApiKey,
+    },
+    update: {
+      hashedApiKey,
+    },
+    where: {
+      platform,
+    },
+  });
+
+  res.status(201).json({ apiKey });
+});
+
+app.post("/platform-rating", async (req, res) => {
+  let apiKey = req.header("x-api-key");
+
+  const { userName, userId, rating } = req.body;
+
+  const hashedApiKey = crypto.createHash("sha256").update(apiKey).digest("hex");
+  const apiKeyInDB = await prisma.platformApiKey.findFirst({
+    where: {
+      hashedApiKey,
+    },
+  });
+
+  if (!apiKeyInDB || apiKeyInDB?.hashedApiKey !== hashedApiKey) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const { platform } = apiKeyInDB;
+
+  let existingRating;
+  const platformRatingURL = `${CERAMIC_QUERY_URL}/platform-rating/${platform}/${userId}`;
+  try {
+    const response = await axios.get(platformRatingURL);
+    existingRating = response.data;
+  } catch (err) {
+    let statusCode = err.response?.status || 500;
+    if (statusCode !== 404) {
+      let message = err.response?.data?.message || err.message;
+      return res.status(statusCode).json({ message });
+    }
+  }
+
+  const query = existingRating
+    ? UPDATE_PLATFORM_RATING
+    : CREATE_PLATFORM_RATING;
+
+  let variables = existingRating
+    ? { id: existingRating.id, user_name: userName, rating }
+    : {
+        platform_name: platform,
+        user_name: userName,
+        user_id: userId,
+        rating,
+      };
+
+  const composeDBResult = await compose.executeQuery(query, variables);
+
+  if (composeDBResult.errors) {
+    return res.status(500).json({ message: composeDBResult.errors[0].message });
+  }
+
+  const doc = existingRating
+    ? composeDBResult.data.updatePlatformRating.document
+    : composeDBResult.data.createPlatformRating.document;
+
+  res.status(201).json({ message: doc });
 });
 
 app.listen(port, () => {

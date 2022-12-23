@@ -12,4 +12,6 @@ COPY package.json yarn.lock ./
 RUN yarn
 
 COPY ./src ./src
+COPY ./prisma ./prisma
 
+RUN npx prisma generate

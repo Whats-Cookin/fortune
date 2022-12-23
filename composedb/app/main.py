@@ -7,6 +7,7 @@ from db import cursor
 PORT = os.getenv('GET_QUERY_PORT', 8000)
 DB_TABLE_GITHUB = os.getenv('DB_TABLE_GITHUB')
 DB_TABLE_FIVERR = os.getenv('DB_TABLE_FIVERR')
+DB_TABLE_PLATFORM_RATING = os.getenv('DB_TABLE_PLATFORM_RATING')
 
 app = FastAPI()
 
@@ -62,6 +63,27 @@ def get_fiverr_profile(user_acount):
         SELECT stream_id, stream_content 
         FROM {DB_TABLE_FIVERR} 
         WHERE json_extract(stream_content, '$.user_account')="{user_acount}"
+    '''
+    result = None
+    try:
+        result = fetch_from_db(query)
+    except Exception as e:
+        raise e
+    record = format_doc(result)
+
+    return record
+
+
+@app.get("/platform-rating/{platform}/{user_id}")
+def get_platform_rating(platform, user_id):
+    # TECHDEBT
+    # This API will be removed once composedb implements the feature to query with fields
+    # https://forum.ceramic.network/t/queries-by-fields/260/6
+    query = f'''
+        SELECT stream_id, stream_content
+        FROM {DB_TABLE_PLATFORM_RATING}
+        WHERE json_extract(stream_content, '$.platform_name')="{platform}" 
+        AND json_extract(stream_content, '$.user_id')="{user_id}"
     '''
     result = None
     try:
