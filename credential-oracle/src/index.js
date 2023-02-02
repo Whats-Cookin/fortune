@@ -291,6 +291,153 @@ app.post("/platform-rating", async (req, res) => {
   res.status(201).json({ message: doc });
 });
 
+
+app.get("/workers/:userAccount", async (req, res) => {
+  const { userAccount } = req.params;
+  const gitqueryUrl = `${CERAMIC_QUERY_URL}/get-github-profile/${userAccount}`;
+  const fivqueryUrl = `${CERAMIC_QUERY_URL}/fiverr-profile/${userAccount}`;
+  let gitresult = {}
+  let fivresult = {}
+
+  try {
+    gitresult = await axios.get(gitqueryUrl);
+  } catch (err) {
+  }
+  try {
+    fivresult = await axios.get(fivqueryUrl);
+  } catch (err) {
+  }
+  res.status(200).json({ message: Object.assign({}, {"git" :gitresult.data}, {"fiver" :fivresult.data}) });
+});
+
+
+
+app.get("/worker-ratings/:platform/:userId", async (req, res) => {
+  const p = req.params['platform']
+  const userId = req.params['userId']
+  // return res.status(statusCode).json({ message: "p: " + p})
+  let apiKey = req.header("x-api-key");
+  console.log(req.params)
+  console.log(p)
+  console.log(userId)
+  // const { userName, userId, rating } = req.body;
+
+  const hashedApiKey = crypto.createHash("sha256").update(p).digest("hex");
+  const apiKeyInDB = await prisma.platformApiKey.findFirst({
+    where: {
+      hashedApiKey,
+    },
+  });
+
+  if (!apiKeyInDB || apiKeyInDB?.hashedApiKey !== hashedApiKey) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const { platform } = apiKeyInDB;
+
+  let existingRating;
+  const platformRatingURL = `${CERAMIC_QUERY_URL}/platform-rating/${platform}/${userId}`;
+  try {
+    const response = await axios.get(platformRatingURL);
+    existingRating = response.data;
+    res.status(200).json({message: { existingRating }})
+  } catch (err) {
+    let statusCode = err.response?.status || 500;
+    // if (statusCode !== 404) {
+      let message = err.response?.data?.message || err.message;
+      return res.status(statusCode).json({ message: "p: " + p});
+    // }
+  }
+
+  // const query = existingRating
+  //   ? UPDATE_PLATFORM_RATING
+  //   : CREATE_PLATFORM_RATING;
+
+  // let variables = existingRating
+  //   ? { id: existingRating.id, user_name: userName, rating }
+  //   : {
+  //       platform_name: platform,
+  //       user_name: userName,
+  //       user_id: userId,
+  //       rating,
+  //     };
+
+  // const composeDBResult = await compose.executeQuery(query, variables);
+
+  // if (composeDBResult.errors) {
+  //   return res.status(500).json({ message: composeDBResult.errors[0].message });
+  // }
+
+  // const doc = existingRating
+  //   ? composeDBResult.data.updatePlatformRating.document
+  //   : composeDBResult.data.createPlatformRating.document;
+
+  // res.status(201).json({ message: doc });
+});
+
+app.get("/all-ratings/:platform/:userId", async (req, res) => {
+  const p = req.params['platform']
+  const userId = req.params['userId']
+  // return res.status(statusCode).json({ message: "p: " + p})
+  let apiKey = req.header("x-api-key");
+  console.log(req.params)
+  console.log(p)
+  console.log(userId)
+  // const { userName, userId, rating } = req.body;
+
+  const hashedApiKey = crypto.createHash("sha256").update(p).digest("hex");
+  const apiKeyInDB = await prisma.platformApiKey.findFirst({
+    where: {
+      hashedApiKey,
+    },
+  });
+
+  if (!apiKeyInDB || apiKeyInDB?.hashedApiKey !== hashedApiKey) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const { platform } = apiKeyInDB;
+
+  let existingRating;
+  const platformRatingURL = `${CERAMIC_QUERY_URL}/all-ratings/${platform}/${userId}`;
+  try {
+    const response = await axios.get(platformRatingURL);
+    existingRating = response.data;
+    res.status(200).json({message: {"rating" : existingRating }})
+  } catch (err) {
+    let statusCode = err.response?.status || 500;
+    // if (statusCode !== 404) {
+      let message = err.response?.data?.message || err.message;
+      return res.status(statusCode).json({ message: "p: " + p});
+    // }
+  }
+
+  // const query = existingRating
+  //   ? UPDATE_PLATFORM_RATING
+  //   : CREATE_PLATFORM_RATING;
+
+  // let variables = existingRating
+  //   ? { id: existingRating.id, user_name: userName, rating }
+  //   : {
+  //       platform_name: platform,
+  //       user_name: userName,
+  //       user_id: userId,
+  //       rating,
+  //     };
+
+  // const composeDBResult = await compose.executeQuery(query, variables);
+
+  // if (composeDBResult.errors) {
+  //   return res.status(500).json({ message: composeDBResult.errors[0].message });
+  // }
+
+  // const doc = existingRating
+  //   ? composeDBResult.data.updatePlatformRating.document
+  //   : composeDBResult.data.createPlatformRating.document;
+
+  // res.status(201).json({ message: doc });
+});
+
 app.listen(port, () => {
   console.log(`Credential Oracle server listening on the port ${port}`);
 });

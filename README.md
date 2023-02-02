@@ -259,3 +259,15 @@ If you encounter any other issues when using the front end, please use the devel
 # Conclusion
 
 In this example we have demonstrated the steps involved in creating and fulfilling jobs on the HUMAN protocol. This is a very basic example which could easily be extended to other use case's. If you have any problems with the setup or usage of this example, please open an issue and let us know! Feel free to check out the HUMAN github repostory for other useful resources.
+
+# Api Endpoints
+```Json
+"Apis"{
+ "git profile" : "http://localhost:3007/get-github-profile/{user_id (wallet adress)}",
+"fiverr profile" : "http://localhost:3007/fiverr-profile/{user_id (wallet adress)}"
+
+"all credentials" : "http://localhost:3007/workers/{user_id (wallet adress)}",
+"workers rating" :" http://localhost:3007/worker-ratings/{platform key}/{user_id (wallet adress)}",
+"atings above limit" : "http://localhost:3007/all-ratings/{platform key}/{rating}"
+}
+```
