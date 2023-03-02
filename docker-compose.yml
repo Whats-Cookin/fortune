@@ -44,7 +44,7 @@ services:
   credential-oracle:
     build:
       context: ./credential-oracle
-    platform: linux/amd64
+    # platform: linux/amd64
     ports:
       - 3007:8080
     environment:
