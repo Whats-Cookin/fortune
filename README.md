@@ -3,6 +3,16 @@
 
 To run the example locally, you will require Docker. Please see this guide for Docker installation instructions. Once Docker is installed and running, from the root of the project run:
 
+If running on Arm uncomment the platform in docker-compose
+```
+credential-oracle:
+    build:
+      context: ./credential-oracle
+    #platform: linux/amd64
+    ports:
+      - 3007:8080
+```
+
 ```
 docker-compose up // Bring up docker env
 ```
@@ -75,15 +85,14 @@ In this example we have demonstrated the steps involved in creating and fulfilli
 
 # Api Endpoints
 ```Json
-
 {
    "Apis"{
    "git profile" : "http://localhost:3007/get-github-profile/{user_id (wallet adress)}",
    "fiverr profile" : "http://localhost:3007/fiverr-profile/{user_id (wallet adress)}",
 
    "all credentials" : "http://localhost:3007/workers/{user_id (wallet adress)}",
-   "workers rating" :" http://localhost:3007/worker-ratings/{platform key}/{user_id (wallet adress)}",
-   "atings above limit" : "http://localhost:3007/all-ratings/{platform key}/{rating}"
+   "workers rating" :" http://localhost:3007/worker-rating/{platform key}/{user_id (wallet adress)}",
+   "ratings above limit" : "http://localhost:3007/all-ratings-above/{platform key}/{rating}"
    }
 }
 ```

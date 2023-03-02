@@ -94,13 +94,8 @@ def get_platform_rating(platform, user_id):
 
     return record
 
-def format_doc_test(doc):
-    id, json_string, s = doc
-    record = json.loads(json_string)
-    record["id"] = id
-    return record
 
-@app.get("/all-ratings/{platform}/{rating}")
+@app.get("/all-ratings-above/{platform}/{rating}")
 def get_all_ratings(platform, rating):
     # TECHDEBT
     # This API will be removed once composedb implements the feature to query with fields
@@ -119,7 +114,7 @@ def get_all_ratings(platform, rating):
         result = fetch_from_db(query)
     except Exception as e:
         raise e
-    record = format_doc_test(result)
+    record = format_doc(result)
 
     return record
 
