@@ -95,5 +95,29 @@ def get_platform_rating(platform, user_id):
     return record
 
 
+@app.get("/all-ratings-above/{platform}/{rating}")
+def get_all_ratings(platform, rating):
+    # TECHDEBT
+    # This API will be removed once composedb implements the feature to query with fields
+    # https://forum.ceramic.network/t/queries-by-fields/260/6
+    # rating = int(rating)
+    query = f'''
+        SELECT stream_id, stream_content, json_extract(stream_content, '$.rating')
+        FROM {DB_TABLE_PLATFORM_RATING}
+        WHERE json_extract(stream_content, '$.platform_name')="{platform}" 
+        AND json_extract(stream_content, '$.rating')>={rating}
+    
+    '''
+    
+    result = None
+    try:
+        result = fetch_from_db(query)
+    except Exception as e:
+        raise e
+    record = format_doc(result)
+
+    return record
+
+
 if __name__ == "__main__":
     uvicorn.run("main:app", port=int(PORT), reload=True, host="0.0.0.0")

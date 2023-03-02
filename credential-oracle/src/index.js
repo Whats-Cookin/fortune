@@ -291,6 +291,91 @@ app.post("/platform-rating", async (req, res) => {
   res.status(201).json({ message: doc });
 });
 
+
+app.get("/workers/:userAccount", async (req, res) => {
+  const { userAccount } = req.params;
+  const gitqueryUrl = `${CERAMIC_QUERY_URL}/get-github-profile/${userAccount}`;
+  const fivqueryUrl = `${CERAMIC_QUERY_URL}/fiverr-profile/${userAccount}`;
+  let gitresult = {}
+  let fivresult = {}
+
+  try {
+    gitresult = await axios.get(gitqueryUrl);
+  } catch (err) {
+  }
+  try {
+    fivresult = await axios.get(fivqueryUrl);
+  } catch (err) {
+  }
+  res.status(200).json({ message: Object.assign({}, {"git" :gitresult.data}, {"fiver" :fivresult.data}) });
+});
+
+
+
+app.get("/worker-rating/:platform/:userId", async (req, res) => {
+  const p = req.params['platform']
+  const userId = req.params['userId']
+
+  const hashedApiKey = crypto.createHash("sha256").update(p).digest("hex");
+  const apiKeyInDB = await prisma.platformApiKey.findFirst({
+    where: {
+      hashedApiKey,
+    },
+  });
+
+  if (!apiKeyInDB || apiKeyInDB?.hashedApiKey !== hashedApiKey) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const { platform } = apiKeyInDB;
+
+  let existingRating;
+  const platformRatingURL = `${CERAMIC_QUERY_URL}/platform-rating/${platform}/${userId}`;
+  try {
+    const response = await axios.get(platformRatingURL);
+    existingRating = response.data;
+    res.status(200).json({message: { existingRating }})
+  } catch (err) {
+    let statusCode = err.response?.status || 500;
+    let message = err.response?.data?.message || err.message;
+    return res.status(statusCode).json({ message: "p: " + p});
+  }
+
+});
+
+app.get("/all-ratings-above/:platform/:userId", async (req, res) => {
+  const p = req.params['platform']
+  const userId = req.params['userId']
+  let apiKey = req.header("platform");
+
+  const hashedApiKey = crypto.createHash("sha256").update(apiKey).digest("hex");
+  const apiKeyInDB = await prisma.platformApiKey.findFirst({
+    where: {
+      hashedApiKey,
+    },
+  });
+
+  if (!apiKeyInDB || apiKeyInDB?.hashedApiKey !== hashedApiKey) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const { platform } = apiKeyInDB;
+
+  let existingRating;
+  const platformRatingURL = `${CERAMIC_QUERY_URL}/all-ratings-above/${platform}/${userId}`;
+  try {
+    const response = await axios.get(platformRatingURL);
+    existingRating = response.data;
+    res.status(200).json({message: {"rating" : existingRating }})
+  } catch (err) {
+    let statusCode = err.response?.status || 500;
+    let message = err.response?.data?.message || err.message;
+    return res.status(statusCode).json({ message: "p: " + p});
+  }
+
+
+});
+
 app.listen(port, () => {
   console.log(`Credential Oracle server listening on the port ${port}`);
 });
